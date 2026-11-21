@@ -582,7 +582,15 @@ $("#shareBtn").addEventListener("click",async()=>{const onClaude=/claude(usercon
 function setupVisits(){const code=S.config.goatcounter;if(!code||setupVisits.done||/claude(usercontent)?\.(ai|com)$/.test(location.hostname)||location.protocol==="file:")return;setupVisits.done=1;
   const sc=document.createElement("script");sc.async=true;sc.src="https://gc.zgo.at/count.js";sc.dataset.goatcounter=`https://${code}.goatcounter.com/count`;document.head.append(sc);
   fetch(`https://${code}.goatcounter.com/counter/TOTAL.json`).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.count){const v=$("#visits");v.hidden=false;v.textContent=j.count+" visits"}}).catch(()=>{})}
-applySnap();setupVisits();if(S.ready&&!markVisit.done){markVisit.done=1;setTimeout(markVisit,1500)}
+/* fresh deals from the GitHub "data" branch via jsDelivr, so the site never needs a redeploy */
+const DATA_REPO="ghoshr8127/Deal-finder",DATA_BRANCH="data";
+function loadRemote(){if((window.claude&&claude.use)||/YOUR-GITHUB/.test(DATA_REPO)||location.protocol==="file:")return;
+  const cur=S.updatedAt;
+  const load=ref=>new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/gh/"+DATA_REPO+"@"+ref+"/deals-data.js";sc.onload=ok;sc.onerror=no;document.head.append(sc)});
+  fetch("https://api.github.com/repos/"+DATA_REPO+"/commits/"+DATA_BRANCH,{headers:{Accept:"application/vnd.github.sha"}})
+    .then(r=>r.ok?r.text():Promise.reject()).then(sha=>load(sha.trim())).catch(()=>load(DATA_BRANCH))
+    .then(()=>{const B=window.BF_SNAPSHOT;if(B&&B.deals&&newer(B.deals.updatedAt,cur)&&B.deals.updatedAt!==cur){applySnap();render()}}).catch(()=>{})}
+applySnap();setupVisits();loadRemote();if(S.ready&&!markVisit.done){markVisit.done=1;setTimeout(markVisit,1500)}
 loadLocal();route();
 (async()=>{
   if(!window.claude||!claude.use){setupExport();S.dbOk=false;render();return}
