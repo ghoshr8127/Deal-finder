@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Black Friday 2026 Deal Finder</title>
+<script src="deals-data.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --ink:#18203A; --muted:#5B6479; --line:#D6DBE6;
+  --tag:#D61F69; --tag-ink:#FFFFFF; --save:#0B7A58; --sticker:#FFD43B; --sticker-ink:#3A2C00;
+  --chip:#E2E7F0; --soon:#2F5BD3;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10142A; --surface:#1A2040; --ink:#EEF1FA; --muted:#A3ABC4; --line:#2E3660;
+    --tag:#F0508E; --tag-ink:#1A0A12; --save:#4CD3A0; --sticker:#FFD43B; --sticker-ink:#3A2C00;
+    --chip:#252C52; --soon:#8FB0FF; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10142A; --surface:#1A2040; --ink:#EEF1FA; --muted:#A3ABC4; --line:#2E3660;
+  --tag:#F0508E; --tag-ink:#1A0A12; --save:#4CD3A0; --sticker:#FFD43B; --sticker-ink:#3A2C00;
+  --chip:#252C52; --soon:#8FB0FF; color-scheme: dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+h1,h2,h3,.num{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--soon);outline-offset:2px}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:12px;padding:12px 0 8px}
+.bar h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.01em;line-height:1.1}
+.bar .sub{font-size:13px;color:var(--muted)}
+.bar .grow{flex:1;min-width:0}
+.count{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:28px;line-height:1;text-align:right}
+.count small{display:block;font-family:"Atkinson Hyperlegible",sans-serif;font-weight:400;font-size:12px;color:var(--muted)}
+.search{display:flex;gap:8px;padding-bottom:10px}
+.search input{flex:1;min-width:0;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+.iconbtn{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:0 14px;cursor:pointer;white-space:nowrap}
+nav.tabs{display:flex;gap:4px;padding-bottom:10px}
+nav.tabs a{flex:1;text-align:center;text-decoration:none;color:var(--muted);padding:8px 0;border-radius:10px;font-weight:700;font-size:15px}
+nav.tabs a[aria-current="page"]{background:var(--ink);color:var(--surface)}
+
+.filters{padding:12px 0 4px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:none;background:var(--chip);border-radius:999px;padding:7px 12px;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.chip .n{opacity:.65;margin-left:4px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-bottom:8px}
+.row select{padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);max-width:100%}
+.syncline{font-size:13px;color:var(--muted);padding:2px 0 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.linkbtn{background:none;border:none;padding:0;color:var(--soon);text-decoration:underline;cursor:pointer;font-size:13px}
+
+.list{display:grid;gap:10px;padding:4px 0 40px}
+@media (min-width:700px){.list{grid-template-columns:1fr 1fr}}
+.deal{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 14px 12px;cursor:pointer;text-align:left;width:100%;display:block}
+.deal .store{font-size:13px;color:var(--muted)}
+.deal h3{font-size:17px;font-weight:700;margin:2px 72px 8px 0;line-height:1.25}
+.price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.price .now{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:26px;line-height:1}
+.price .was{color:var(--muted);text-decoration:line-through;font-size:14px}
+.price .save{color:var(--save);font-weight:700;font-size:14px}
+.tag{position:absolute;top:12px;right:12px;background:var(--tag);color:var(--tag-ink);font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:17px;padding:7px 10px 7px 16px;border-radius:4px 10px 10px 4px;transform:rotate(4deg);clip-path:polygon(10px 0,100% 0,100% 100%,10px 100%,0 50%)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;font-size:13px}
+.pill{border-radius:6px;padding:2px 8px;background:var(--chip)}
+.pill.live{background:transparent;border:1px solid var(--save);color:var(--save)}
+.pill.soon{background:transparent;border:1px solid var(--soon);color:var(--soon)}
+.pill.low{background:var(--sticker);color:var(--sticker-ink);font-weight:700}
+.pill.mine{background:var(--ink);color:var(--surface)}
+.also{font-size:13px;color:var(--muted);margin-top:6px}
+.empty{padding:40px 8px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.panel h2{margin:0 0 8px;font-size:20px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:15px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.budget{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.budget label{font-size:13px;color:var(--muted);display:grid;gap:4px}
+.budget input{width:130px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.stat .num{font-size:24px;font-weight:800;display:block;line-height:1.1}
+.stat{font-size:13px;color:var(--muted)}
+.stat.neg .num{color:var(--tag)}
+.verdict{font-weight:700;font-size:14px}
+.verdict.buy{color:var(--save)}
+
+dialog{border:none;border-radius:18px 18px 0 0;padding:0;width:100%;max-width:620px;margin:auto auto 0;background:var(--surface);color:var(--ink);max-height:88vh}
+@media (min-width:700px){dialog{border-radius:18px;margin:auto}}
+dialog::backdrop{background:rgba(10,14,30,.55)}
+.sheet{padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));overflow:auto;max-height:88vh}
+.sheet h2{font-size:22px;margin:4px 0 6px;line-height:1.2}
+.sheet .close{float:right;border:none;background:var(--chip);border-radius:999px;width:36px;height:36px;cursor:pointer;font-size:18px}
+.decide{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.decide button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:700}
+.decide button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.field{display:grid;gap:4px;font-size:13px;color:var(--muted);margin:10px 0}
+.field input{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:16px;max-width:200px}
+.cmp{width:100%;border-collapse:collapse;font-size:15px;margin:6px 0}
+.cmp td{padding:6px 0;border-bottom:1px solid var(--line)}
+.cmp td:last-child{text-align:right;font-weight:700}
+a.src{color:var(--soon)}
+.prompt{background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:12px;font-weight:700;margin:10px 0}
+.primary{background:var(--ink);color:var(--surface);border:none;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
+.note{font-size:13px;color:var(--muted)}
+.bell{position:relative;font-size:18px;padding:0 12px}
+.badge{position:absolute;top:-6px;right:-6px;background:var(--tag);color:var(--tag-ink);font-size:12px;font-weight:700;min-width:20px;height:20px;border-radius:999px;display:grid;place-items:center;padding:0 5px}
+.banner{display:flex;gap:12px;align-items:center;background:var(--ink);color:var(--surface);border-radius:14px;padding:12px 14px;margin:4px 0 10px;cursor:pointer;width:100%;text-align:left;border:none}
+.banner .when{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:20px;line-height:1;min-width:64px;text-align:center}
+.banner .when small{display:block;font-family:"Atkinson Hyperlegible",sans-serif;font-weight:400;font-size:12px;opacity:.8;margin-top:3px}
+.banner .what{font-size:15px;line-height:1.3}
+.banner .what span{display:block;font-size:13px;opacity:.8}
+.alert{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:62px 1fr;gap:12px}
+.alert:first-of-type{border-top:none}
+.alert .d{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:22px;line-height:1;text-align:center;background:var(--bg);border-radius:10px;padding:8px 0}
+.alert .d small{display:block;font-family:"Atkinson Hyperlegible",sans-serif;font-weight:400;font-size:12px;color:var(--muted)}
+.alert h3{margin:0;font-size:16px}
+.alert p{margin:2px 0 6px;font-size:14px;color:var(--muted)}
+.alert .acts{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:13px}
+.conf{font-size:12px;border-radius:6px;padding:1px 7px;border:1px solid var(--line)}
+.conf.Confirmed{border-color:var(--save);color:var(--save)}
+.conf.Expected{border-color:var(--soon);color:var(--soon)}
+.isnow{color:var(--tag);font-weight:700}
+.hero{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;margin:6px 0 4px}
+.hero .pic{width:96px;height:96px;border-radius:16px;background:var(--bg);display:grid;place-items:center;font-size:52px;border:1px solid var(--line)}
+.shoprow{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+.shoprow a{text-decoration:none}
+.ghost{display:inline-block;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 14px;font-weight:700}
+a.primary{display:inline-block;text-decoration:none}
+.pill.new{background:var(--tag);color:var(--tag-ink);font-weight:700}
+.tag small{display:block;font-size:11px;font-weight:700;line-height:1;margin-bottom:2px}
+.pill.ch{background:transparent;border:1px solid var(--line)}
+.pill.cp{background:var(--save);color:var(--surface);font-weight:700}
+.coupon{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:2px dashed var(--save);border-radius:12px;padding:10px 12px;margin:12px 0}
+.coupon code{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:16px;background:var(--bg);padding:3px 8px;border-radius:6px}
+.ctry{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px;flex:none}
+.ctry button{border:none;background:none;border-radius:9px;padding:6px 10px;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted);white-space:nowrap}
+.ctry button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.didyou{color:var(--tag);font-weight:700}
+.xhint{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:14px;margin:0 0 10px}
+.visits{font-size:12px;color:var(--muted);text-align:center;padding:0 0 8px}
+@media (max-width:560px){.bar{flex-wrap:wrap}.ctry{order:3;width:100%}.ctry button{flex:1}.row select{flex:1 1 calc(50% - 4px);min-width:0}.sharetx{display:none}}
+@media (min-width:561px){.shareic{display:none}}
+.disc{font-size:12px;color:var(--muted);padding:0 0 30px;text-align:center}
+.rc{font-size:13px;color:var(--muted);margin:0 0 6px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-size:14px;z-index:20;display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="bar">
+      <div class="grow">
+        <h1>Black Friday Deal Finder</h1>
+        <div class="sub" id="bfCountdown">2026</div>
+      </div>
+      <div class="ctry" role="group" aria-label="Country">
+        <button type="button" data-c="US" aria-pressed="true">🇺🇸 USA</button>
+        <button type="button" data-c="CA" aria-pressed="false">🇨🇦 Canada</button>
+      </div>
+      <div class="count" id="dealCount">–<small>deals</small></div>
+    </div>
+    <div class="search">
+      <input id="q" type="search" placeholder="Search AirPods, OLED, Costco…" autocomplete="off" aria-label="Search deals">
+      <button class="iconbtn bell" id="bellBtn" type="button" aria-label="Deal drop alerts">🔔<span class="badge" id="badge" hidden></span></button>
+      <button class="iconbtn" id="shareBtn" type="button" aria-label="Share this page"><span class="sharetx">Share</span><span class="shareic" aria-hidden="true">↗</span></button>
+      <button class="iconbtn" id="syncBtn" type="button">Updates</button>
+    </div>
+    <nav class="tabs" aria-label="Views">
+      <a href="#deals" data-view="deals">Deals</a>
+      <a href="#mylist" data-view="mylist">My list</a>
+      <a href="#calendar" data-view="calendar">Store dates</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="v-deals">
+    <div class="filters">
+      <div class="chips" id="cats" role="group" aria-label="Category"></div>
+      <div class="row">
+        <select id="store" aria-label="Store"></select>
+        <select id="status" aria-label="Status">
+          <option value="All">Live and upcoming</option>
+          <option value="Live">Live now</option>
+          <option value="Upcoming">Upcoming</option>
+          <option value="Check">Check dates</option>
+        </select>
+        <select id="where" aria-label="Where to buy">
+          <option value="All">Online and in store</option>
+          <option value="store">Also sold in store</option>
+          <option value="coupon">Has a coupon or bonus</option>
+        </select>
+        <select id="sort" aria-label="Sort">
+          <option value="pct">Biggest % off</option>
+          <option value="save">Biggest $ off</option>
+          <option value="low">Lowest price</option>
+          <option value="new">Newest first</option>
+          <option value="az">A to Z</option>
+        </select>
+      </div>
+      <div class="syncline"><span id="updated">Loading deals…</span><button class="linkbtn" id="exportBtn" type="button" hidden>Export CSV</button></div>
+    </div>
+    <div id="nextDrop"></div>
+    <div id="xhint"></div>
+    <p class="rc" id="rescount"></p>
+    <div class="list" id="list"></div>
+  </section>
+
+  <section id="v-mylist" hidden>
+    <div class="panel">
+      <h2>My list</h2>
+      <div class="budget">
+        <label>Budget<input id="budget" type="number" min="0" step="10" inputmode="decimal" placeholder="1000"></label>
+        <div class="stat"><span class="num" id="planned">$0</span>Buy + Maybe at best prices</div>
+        <div class="stat"><span class="num" id="spent">$0</span>Marked bought</div>
+        <div class="stat" id="leftWrap"><span class="num" id="left">–</span>Left after plan</div>
+      </div>
+      <p class="note" id="saveNote">Tap a deal and choose Buy, Maybe or Bought to add it here.</p>
+    </div>
+    <div class="list" id="mine"></div>
+  </section>
+
+  <section id="v-calendar" hidden>
+    <div id="cal"></div>
+  </section>
+  <p class="disc" id="disclosure" hidden></p>
+  <p class="visits" id="visits" hidden></p>
+</main>
+
+<dialog id="dlg" aria-labelledby="dTitle"><div class="sheet" id="dBody"></div></dialog>
+<dialog id="syncDlg" aria-labelledby="sTitle"><div class="sheet">
+  <button class="close" type="button" data-close aria-label="Close">×</button>
+  <h2 id="sTitle">How this list stays current</h2>
+  <p id="syncWhen" class="note"></p>
+  <p>This list updates on its own twice a day (morning and evening, Eastern time): new deals are added, prices refreshed and ended deals marked. Reload the page to see the newest deals.</p>
+  <p class="note">Prices move fast. Always confirm the price on the store’s site before you buy. Your list, targets and budget stay private to you.</p>
+</div></dialog>
+<dialog id="alertDlg" aria-labelledby="aTitle"><div class="sheet">
+  <button class="close" type="button" data-close aria-label="Close">×</button>
+  <h2 id="aTitle">Deal drops coming up</h2>
+  <p class="note">Announced dates from store newsrooms and deal trackers. “Expected” means the store hasn’t confirmed yet. Add one to your calendar to get a reminder 30 minutes before.</p>
+  <div id="alertList"></div>
+  <button class="primary" type="button" id="addAll" hidden>Add all to calendar</button>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const fmt=n=>n==null||isNaN(n)?"":(S.country==="CA"?"C$":"$")+Number(n).toLocaleString("en-US",{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2});
+const S={country:"US",all:[],allAlerts:[],allStores:[],where:"All",config:{},alerts:[],seen:new Set(),prevVisit:null,items:[],stores:[],updatedAt:null,picks:{},budget:null,q:"",cat:"All",store:"All",status:"All",sort:"pct",view:"deals",ready:false,dbOk:null};
+let db=null,picksRef=null,writing=false,pending=false,localOnly=false;
+
+/* countdown */
+(function(){const bf=new Date(2026,10,27);const d=Math.ceil((bf-new Date().setHours(0,0,0,0))/864e5);
+S.cd=d>1?`${d} days to Black Friday, Nov 27`:d===1?"Black Friday is tomorrow":d===0?"It’s Black Friday":"Cyber Week deals";})();
+
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2200)}
+function el(tag,props,...kids){const e=document.createElement(tag);if(props)for(const k in props){if(k==="class")e.className=props[k];else if(k==="text")e.textContent=props[k];else if(k.startsWith("on"))e.addEventListener(k.slice(2),props[k]);else e.setAttribute(k,props[k])}kids.flat().forEach(k=>k!=null&&e.append(k));return e}
+
+function calc(d){const save=(d.reg!=null&&d.deal!=null)?d.reg-d.deal:(d.off!=null?Number(d.off):null);const pct=(d.reg!=null&&d.deal!=null&&d.reg>0)?save/d.reg:(d.pct??null);return{save,pct}}
+const key=s=>s.trim().toLowerCase();
+function groups(){const g={};S.items.forEach(d=>{(g[key(d.item)]??=[]).push(d)});return g}
+
+/* picks persistence */
+function loadLocal(){try{const v=JSON.parse(localStorage.getItem("bf-picks")||"{}");S.picks=v.picks||{};S.budget=v.budget??null}catch(e){}}
+function saveLocal(){try{localStorage.setItem("bf-picks",JSON.stringify({picks:S.picks,budget:S.budget}))}catch(e){}}
+async function savePicks(){saveLocal();if(!picksRef)return;if(writing){pending=true;return}writing=true;
+  try{await picksRef.set({picks:S.picks,budget:S.budget,updated:new Date().toISOString()})}catch(e){if(!localOnly){localOnly=true;$("#saveNote").textContent="Your list is saved on this device only."}}
+  writing=false;if(pending){pending=false;savePicks()}}
+function setPick(id,patch){const p={...(S.picks[id]||{}),...patch};if(!p.decision&&(p.target==null||p.target===""))delete S.picks[id];else S.picks[id]=p;savePicks();render()}
+
+/* icons and store links */
+const ICON={"TVs":"📺","Apple Products":"🍎","Laptops & Computers":"💻","Phones":"📱","Streaming & Smart Home":"🏠","Tablets & eReaders":"📖","Headphones & Audio":"🎧","Video Games & Consoles":"🎮","Small Kitchen Appliances":"🍳","Vacuums & Cleaning":"🧹","Large Appliances":"🧺","Tools & Outdoor":"🛠️","Holiday & Decor":"🎄","Beauty":"💄","Clothing & Shoes":"👕","Toys":"🧸","Wearables":"⌚","Home & Bedding":"🛋️","Luxury & Designer":"💎","Bags & Accessories":"👜","Baby & Kids":"🍼"};
+const SEARCH={"Walmart":"https://www.walmart.com/search?q=","Amazon":"https://www.amazon.com/s?k=","Best Buy":"https://www.bestbuy.com/site/searchpage.jsp?st=","Target":"https://www.target.com/s?searchTerm=","Costco":"https://www.costco.com/CatalogSearch?keyword=","Home Depot":"https://www.homedepot.com/s/","Lowe's":"https://www.lowes.com/search?searchTerm=","Ulta":"https://www.ulta.com/search?search=","Gap":"https://www.gap.com/browse/search.do?searchText=","Woot":"https://www.woot.com/search?query=","Kohl's":"https://www.kohls.com/search.jsp?search=","Macy's":"https://www.macys.com/shop/featured/"};
+const SEARCH_CA={"Walmart":"https://www.walmart.ca/search?q=","Amazon":"https://www.amazon.ca/s?k=","Best Buy":"https://www.bestbuy.ca/en-ca/search?search=","Costco":"https://www.costco.ca/CatalogSearch?keyword=","Home Depot":"https://www.homedepot.ca/search?q=","Canadian Tire":"https://www.canadiantire.ca/en/search-results.html?q=","Sport Chek":"https://www.sportchek.ca/en/search-results.html?q=","Staples":"https://www.staples.ca/search?query=","Mark's":"https://www.marks.com/en/search-results.html?q=","IKEA":"https://www.ikea.com/ca/en/search/?q="};
+function storeLink(d){const base=(d.country==="CA"?SEARCH_CA:SEARCH)[d.store];const q=encodeURIComponent(d.item.replace(/\(.*?\)/g,"").replace(/"/g," inch").trim());
+  if(base)return{href:base+q,label:"See photos and buy at "+d.store};
+  if(d.store==="PlayStation Direct")return{href:"https://direct.playstation.com/en-us/",label:"See it at PlayStation Direct"};
+  return{href:"https://www.google.com/search?tbm=shop&q="+q,label:"See photos and prices"}}
+const isNew=d=>S.prevVisit&&d.added&&d.added>S.prevVisit.slice(0,10);
+
+/* alerts */
+const DAY=864e5;
+function dayLabel(iso){const d=new Date(iso),t=new Date();t.setHours(0,0,0,0);const dd=new Date(d);dd.setHours(0,0,0,0);const n=Math.round((dd-t)/DAY);
+  return{big:d.toLocaleDateString("en-US",{month:"short",day:"numeric"}),small:n===0?"today":n===1?"tomorrow":n>1?`in ${n} days`:"",n}}
+function upcoming(){const now=Date.now();return S.alerts.filter(a=>!a.start||new Date(a.end||a.start)>=now).sort((a,b)=>(a.start?Date.parse(a.start):9e15)-(b.start?Date.parse(b.start):9e15))}
+function isLive(a){const now=Date.now();return a.start&&Date.parse(a.start)<=now&&(!a.end||Date.parse(a.end)>=now)}
+function fresh(){return upcoming().filter(a=>a.start&&!S.seen.has(a.id)&&(Date.parse(a.start)-Date.now())<7*DAY)}
+function icsFor(list){const z=s=>String(s||"").replace(/[\\;,]/g,m=>"\\"+m).replace(/\n/g,"\\n");
+  const t=iso=>new Date(iso).toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const ev=list.filter(a=>a.start).map(a=>["BEGIN:VEVENT","UID:"+a.id+"@bf-deal-finder","DTSTAMP:"+t(new Date().toISOString()),"DTSTART:"+t(a.start),"DTEND:"+t(new Date(Date.parse(a.start)+36e5).toISOString()),"SUMMARY:"+z(a.store+": "+a.title),"DESCRIPTION:"+z(a.detail+(a.confidence==="Expected"?" (expected, not confirmed)":"")),"BEGIN:VALARM","TRIGGER:-PT30M","ACTION:DISPLAY","DESCRIPTION:"+z(a.store+" deals start soon"),"END:VALARM","END:VEVENT"].join("\r\n"));
+  return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//BF Deal Finder//EN",...ev,"END:VCALENDAR"].join("\r\n")}
+let DL=null;
+async function addCal(list,name){if(!DL){toast("Calendar files can’t be saved here");return}
+  try{await DL.save({filename:name+".ics",data:icsFor(list)});toast("Open the file to add it to your calendar")}catch(e){toast("Not saved")}}
+function renderBadge(){const n=fresh().length;const b=$("#badge");b.hidden=!n;b.textContent=n;$("#bellBtn").setAttribute("aria-label",n?`Deal drop alerts, ${n} new`:"Deal drop alerts")}
+function renderBanner(){const box=$("#nextDrop");const nx=upcoming().find(a=>a.start&&!isLive(a));const live=upcoming().filter(isLive).filter(a=>a.store!=="All stores");
+  if(!nx&&!live.length){box.replaceChildren();return}
+  const a=nx||live[0];const l=dayLabel(a.start);
+  box.replaceChildren(el("button",{class:"banner",type:"button",onclick:openAlerts},
+    el("div",{class:"when"},nx?l.big:"Live",el("small",{text:nx?l.small:"now"})),
+    el("div",{class:"what"},`${a.store}: ${a.title}`,el("span",{text:(a.confidence==="Expected"?"Expected, not confirmed. ":"")+(live.length&&nx?`${live.length} sale${live.length>1?"s":""} live now. `:"")+"See all drops"}))))}
+function openAlerts(){const list=upcoming();const box=$("#alertList");
+  box.replaceChildren(...(list.length?list.map(a=>{const l=a.start?dayLabel(a.start):null;
+    return el("div",{class:"alert"},
+      el("div",{class:"d"},l?l.big:"TBA",el("small",{text:l?(isLive(a)?"live now":l.small):"watching"})),
+      el("div",{},el("h3",{text:a.store+": "+a.title}),el("p",{text:a.detail}),
+        el("div",{class:"acts"},el("span",{class:"conf "+a.confidence,text:a.confidence}),
+          a.start&&!isLive(a)&&DL?el("button",{class:"linkbtn",type:"button",onclick:()=>addCal([a],a.id)},"Add to calendar"):null,
+          a.url?el("a",{class:"src",href:a.url,target:"_blank",rel:"noopener",text:a.src}):null)))}):[el("p",{class:"note",text:"No announced drops right now."})]));
+  $("#addAll").hidden=!DL||!list.some(a=>a.start&&!isLive(a));
+  list.forEach(a=>S.seen.add(a.id));try{localStorage.setItem("bf-seen",JSON.stringify([...S.seen]))}catch(e){}
+  renderBadge();if(!$("#alertDlg").open)$("#alertDlg").showModal()}
+$("#bellBtn").addEventListener("click",openAlerts);
+$("#addAll").addEventListener("click",()=>addCal(upcoming().filter(a=>a.start&&!isLive(a)),"black-friday-2026-deal-drops"));
+$("#alertDlg").addEventListener("click",e=>{if(e.target.id==="alertDlg"||e.target.hasAttribute("data-close"))$("#alertDlg").close()});
+try{S.seen=new Set(JSON.parse(localStorage.getItem("bf-seen")||"[]"));S.prevVisit=localStorage.getItem("bf-lastvisit")}catch(e){}
+
+/* filters */
+/*SEARCH-START*/
+/* Search: synonyms, plurals, typo correction, partial and joined/split words.
+   Source of truth for the search block in site/index.html (inlined between the SEARCH markers). */
+const SYN0={tv:["tvs","television","oled","qled","mini led"],television:["tv"],laptop:["laptops","macbook","chromebook","computer","notebook"],computer:["laptop","mac","desktop","pc"],headphone:["headphones","earbuds","airpods","beats","audio"],earbud:["airpods","earbuds","buds"],airpod:["airpods"],phone:["phones","iphone","galaxy","pixel"],watch:["watch","wearables","fitness"],vacuum:["vacuums","dyson","shark","bissell","roomba","robot"],kitchen:["kitchen","air fryer","blender","mixer","coffee","cooker","toaster"],coffee:["keurig","espresso","barista"],"air":["air fryer"],fryer:["air fryer","ninja"],tool:["tools","drill","driver","dewalt","craftsman","ryobi","milwaukee","husky","wrench"],drill:["drill","driver","combo kit"],game:["games","gaming","console","switch","ps5","playstation","xbox"],console:["switch","ps5","playstation","xbox"],camera:["cam","ring","blink","doorbell","security"],doorbell:["ring","blink"],security:["ring","blink","simplisafe","cam"],speaker:["speaker","soundbar","sonos","jbl","home"],tablet:["ipad","fire hd","kindle","tablets"],christmas:["tree","holiday","lights","decor"],tree:["christmas"],beauty:["skin","hair","cream","sunscreen","dyson airwrap","glossi"],toy:["toys","lego","polly"],luggage:["suitcase","luggage"],apple:["airpods","airtag","macbook","mac","iphone","apple watch","ipad","pencil"],fridge:["refrigerator"],washer:["washer","dryer","laundry"],mattress:["bedding","blanket"],grill:["grill","griddle","blackstone"]};
+const SYN={tv:["tvs","television","oled","qled","mini led"],television:["tv"],laptop:["laptops","macbook","chromebook","computer","notebook","vivobook","ideapad","omnibook"],computer:["laptop","mac","desktop","pc","chromebook"],headphone:["headphones","earbuds","airpods","beats","audio","buds"],earbud:["airpods","earbuds","buds"],airpod:["airpods"],phone:["phones","iphone","galaxy","pixel"],watch:["watch","wearables","fitness","garmin","oura"],vacuum:["vacuums","dyson","shark","bissell","roomba","robot","roborock"],kitchen:["kitchen","air fryer","blender","mixer","coffee","cooker","toaster","espresso"],coffee:["keurig","espresso","barista","nespresso"],air:["air fryer"],fryer:["air fryer","ninja"],tool:["tools","drill","driver","dewalt","craftsman","ryobi","milwaukee","husky","wrench"],drill:["drill","driver","combo kit"],game:["games","gaming","console","switch","ps5","playstation","xbox"],console:["switch","ps5","playstation","xbox"],camera:["cam","ring","blink","doorbell","security"],doorbell:["ring","blink"],security:["ring","blink","simplisafe","cam"],speaker:["speaker","soundbar","sonos","jbl","home"],tablet:["ipad","fire hd","kindle","tablets"],christmas:["tree","holiday","lights","decor"],tree:["christmas"],beauty:["skin","hair","cream","sunscreen","dyson airwrap","glossi"],toy:["toys","lego","polly"],luggage:["suitcase","luggage"],apple:["airpods","airtag","macbook","mac","iphone","apple watch","ipad","pencil"],fridge:["refrigerator"],washer:["washer","dryer","laundry"],mattress:["bedding","blanket","mattress"],grill:["grill","griddle","blackstone"],clothe:["clothing","shoes","sweater","jacket","coat","jeans","pant","shirt"],clothing:["clothing & shoes"],fashion:["clothing","bags & accessories"],shoe:["shoes","sneaker","boot","slipper","flat","clog","running"],sneaker:["sneaker","running shoes","shoes"],boot:["boot","bootie"],jacket:["jacket","coat","puffer","fleece","sherpa"],coat:["coat","jacket","puffer"],sweater:["sweater","cardigan","pullover","crew","hood"],jean:["jeans","denim"],bag:["bag","tote","handbag","crossbody","luggage"],handbag:["tote","bag","crossbody"],purse:["bag","tote","crossbody"],accessory:["bags & accessories","scarf","gloves","watch","jewelry"],jewelry:["jewelry","watch"],kid:["kids","baby"],cellphone:["iphone","galaxy","pixel"],mobile:["iphone","galaxy","pixel","phone"],earphone:["earbuds","airpods","headphones"],notebook:["laptop"],ps5:["playstation"],playstation:["ps5"],xbox:["xbox"],nintendo:["switch"]};
+for(const k in SYN0)SYN[k]=[...new Set([...(SYN[k]||[]),...SYN0[k]])];
+const ALIAS={bestbuy:"best buy",homedepot:"home depot",lowes:"lowe s",macys:"macy s",kohls:"kohl s",ct:"canadian tire",canadiantire:"canadian tire",sportchek:"sport chek",marks:"mark s",saks:"saks fifth avenue",neiman:"neiman marcus",nm:"neiman marcus",bloomies:"bloomingdale s",bloomingdales:"bloomingdale s",lulu:"lululemon",tnf:"north face",northface:"north face",oldnavy:"old navy",jcrew:"j crew",ms:"microsoft",ps5:"playstation 5",xbox:"xbox",luxury:"luxury designer",designer:"luxury designer",purse:"bag",handbag:"bag",bags:"bag"};
+const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[“”"’']/g,"").replace(/[^a-z0-9.+]+/g," ").trim();
+const stem=w=>w.length>4&&w.endsWith("ies")?w.slice(0,-3)+"y":w.length>4&&/(x|ch|sh|ss)es$/.test(w)?w.slice(0,-2):w.length>2&&w.endsWith("s")&&!w.endsWith("ss")?w.slice(0,-1):w;
+/* edit distance with adjacent swaps (Damerau), stopping early past max */
+function editDist(a,b,max){if(a===b)return 0;const la=a.length,lb=b.length;if(Math.abs(la-lb)>max)return max+1;
+  let p2=null,p=Array.from({length:lb+1},(_,j)=>j);
+  for(let i=1;i<=la;i++){const c=[i];let lo=i;
+    for(let j=1;j<=lb;j++){let v=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));
+      if(p2&&i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])v=Math.min(v,p2[j-2]+1);
+      c.push(v);if(v<lo)lo=v}
+    if(lo>max)return max+1;p2=p;p=c}
+  return p[lb]}
+const allowed=w=>w.length<=3?0:w.length<=5?1:w.length<=8?2:3;
+let SIDX=null;
+const has=(hay,w)=>w.length<=3?(" "+hay).includes(" "+w):hay.includes(w);
+/* vocabulary of every word in every deal (all countries), plus synonym keys */
+function searchIndex(items){if(SIDX&&SIDX.items===items)return SIDX;const vocab=new Set(Object.keys(SYN)),raw=new Map();
+  const docs=new Map();
+  for(const d of items){const name=norm(d.item),rest=norm([d.store,d.cat,d.notes,d.coupon].join(" "));
+    docs.set(d,{name,rest,nameC:name.replace(/ /g,""),restC:rest.replace(/ /g,"")});
+    for(const w of (name+" "+rest).split(" "))if(w.length>1&&!/^\d+$/.test(w)){vocab.add(w);vocab.add(stem(w));const st=stem(w);if(!raw.has(st)||w.length<raw.get(st).length)raw.set(st,w)}}
+  SIDX={items,docs,vocab:[...vocab],raw};return SIDX}
+/* closest known words for a word that matches nothing as typed */
+function corrections(w,idx){const max=allowed(w);if(!max)return [];const out=[];
+  for(const v of idx.vocab){if(v===w)continue;const d=editDist(w,v,max);if(d<=max)out.push([v,d])}
+  out.sort((a,b)=>a[1]-b[1]||a[0].length-b[0].length);const best=out.length?out[0][1]:0;
+  return out.filter(x=>x[1]===best).slice(0,4).map(x=>x[0])}
+function termHits(t,doc){
+  if(has(doc.name,t.w))return 3;if(has(doc.rest,t.w))return 2;
+  if(t.w.length>=4&&(doc.nameC.includes(t.w)))return 2.6;
+  if(t.syn.some(x=>doc.name.includes(x)))return 1.5;if(t.syn.some(x=>doc.rest.includes(x)))return 1;
+  for(const f of t.fix){if(doc.name.includes(f))return 2.4;if(doc.rest.includes(f))return 1.8}
+  if(t.fixSyn.some(x=>doc.name.includes(x)))return 0.9;
+  return 0}
+/* scoreOf kept for the unit tests: plain terms {w, syn} */
+function scoreOf(d,terms){const idx=searchIndex([d]);const doc=idx.docs.get(d);let s=0,all=true;
+  for(const t of terms){const h=termHits({fix:[],fixSyn:[],...t},doc);if(!h)all=false;s+=h}return s?s+(all?10:0):0}
+let SEARCH_NOTE=null;
+/* rank `base` for query q; `all` = every deal (for the vocabulary); sets SEARCH_NOTE when words were corrected */
+function searchRank(base,q,srt,all){SEARCH_NOTE=null;const nq=norm(q);if(!nq)return base.slice().sort(srt);
+  const idx=searchIndex(all||base),docs=[...idx.docs.values()];
+  const words=nq.split(" ").filter(Boolean);
+  /* joined query: "air pods" -> also try "airpods"; "macbookair" handled by compact match */
+  const terms=words.map(w=>{const st=stem(w);const al=ALIAS[w]||ALIAS[st];const syn=[...(SYN[st]||[]),...(SYN[w]||[]),...(al?[al]:[])].map(norm);
+    const known=docs.some(doc=>has(doc.name,st)||has(doc.rest,st)||(st.length>=4&&doc.nameC.includes(st)))||syn.some(x=>docs.some(doc=>doc.name.includes(x)||doc.rest.includes(x)));
+    const fix=known?[]:corrections(st,idx);const fixSyn=fix.flatMap(f=>SYN[f]||[]).map(norm);
+    return{typed:w,w:st,syn,fix,fixSyn}});
+  if(words.length>1){const joined=words.join("");terms.push({typed:joined,w:joined,syn:[],fix:[],fixSyn:[],bonus:true})}
+  const fixed=terms.filter(t=>t.fix.length);if(fixed.length)SEARCH_NOTE={typed:words.join(" "),meant:terms.filter(t=>!t.bonus).map(t=>t.fix.length?(idx.raw.get(t.fix[0])||t.fix[0]):t.typed).join(" ")};
+  const core=terms.filter(t=>!t.bonus);const sc=new Map();
+  for(const d of base){const doc=idx.docs.get(d)||searchIndex([d]).docs.get(d);let s=0,all=true;
+    for(const t of core){const h=termHits(t,doc);if(!h)all=false;s+=h}
+    const j=terms.find(t=>t.bonus);if(j&&(doc.nameC.includes(j.w)||doc.restC.includes(j.w))){s+=4;all=true}
+    if(s>0)sc.set(d,s+(all?10:0))}
+  /* nothing at all: fall back to letters-in-order of the whole query against names */
+  if(!sc.size&&nq.replace(/ /g,"").length>=5){const c=nq.replace(/ /g,""),span=Math.ceil(c.length*1.5);
+    for(const d of base){const doc=idx.docs.get(d);if(!doc)continue;const n=doc.nameC;
+      for(let st=n.indexOf(c[0]);st>=0;st=n.indexOf(c[0],st+1)){let i=0,k=st;
+        for(;k<n.length&&k-st<span&&i<c.length;k++)if(n[k]===c[i])i++;
+        if(i===c.length){sc.set(d,1);break}}}}
+  return [...sc.keys()].sort((a,b)=>(sc.get(b)-sc.get(a))||srt(a,b))}
+/*SEARCH-END*/
+function filtered(list){
+  const searching=!!norm(S.q);
+  const base=(list||S.items).filter(d=>{
+    if(!searching&&S.cat!=="All"&&d.cat!==S.cat)return false;
+    if(!searching&&S.store!=="All"&&d.store!==S.store)return false;
+    if(S.status!=="All"&&d.status!==S.status)return false;
+    if(S.where==="store"&&d.inStore!==true)return false;
+    if(S.where==="coupon"&&!d.coupon)return false;
+    return true});
+  const srt=(a,b)=>{const A=calc(a),B=calc(b);
+    if(S.sort==="pct")return (B.pct??-1)-(A.pct??-1);
+    if(S.sort==="save")return (B.save??-1)-(A.save??-1);
+    if(S.sort==="low")return (a.deal??1e9)-(b.deal??1e9);
+    if(S.sort==="new")return (b.added||"").localeCompare(a.added||"");
+    return a.item.localeCompare(b.item)};
+  return searchRank(base,S.q,srt,S.all||S.items)}
+
+/* affiliate links */
+function aff(store,url,country){const A=S.config.affiliate||{};const t=A[(country||S.country)+":"+store]||((country||S.country)==="US"?A[store]:null);if(!t||!url)return url;
+  if(t.includes("{url}"))return t.replace("{url}",encodeURIComponent(url));
+  if(t.includes("{rawurl}"))return t.replace("{rawurl}",url);
+  return url+(url.includes("?")?"&":"?")+t}
+function renderDisclosure(){const a=S.config.affiliate||{};const has=Object.values(a).some(Boolean);const el_=$("#disclosure");
+  el_.hidden=!has&&!S.config.footer;
+  el_.textContent=[has?"Some store links are affiliate links: if you buy through them, this site may earn a commission at no extra cost to you.":"",(a.Amazon||a["US:Amazon"]||a["CA:Amazon"])?"As an Amazon Associate, this site earns from qualifying purchases.":"",S.config.footer||""].filter(Boolean).join(" ")}
+
+function card(d,g){const c=calc(d);const same=(g[key(d.item)]||[]).filter(x=>x!==d&&x.deal!=null);
+  const lowest=same.length&&d.deal!=null&&d.deal<=Math.min(...same.map(x=>x.deal));
+  const pick=S.picks[d.id];
+  const price=el("div",{class:"price"},
+    d.deal!=null?el("span",{class:"now",text:fmt(d.deal)}):el("span",{class:"now",text:d.off!=null?fmt(Number(d.off))+" off":c.pct!=null?"Sale":"See deal"}),
+    d.reg!=null?el("span",{class:"was",text:fmt(d.reg)}):null,
+    c.save!=null&&c.save>0&&d.deal!=null?el("span",{class:"save",text:"Save "+fmt(c.save)}):null);
+  const meta=el("div",{class:"meta"},
+    el("span",{class:"pill "+(d.status==="Live"?"live":d.status==="Upcoming"?"soon":""),text:d.status==="Live"?"Live now":d.status==="Upcoming"?"Upcoming":"Check dates"}),
+    d.window&&d.window!=="Live now"?el("span",{class:"pill",text:d.window}):null,
+    isNew(d)?el("span",{class:"pill new",text:"New"}):null,
+    el("span",{class:"pill ch",text:d.inStore===true?"Online + in store":d.inStore===false?"Online only":"Online"}),
+    d.coupon?el("span",{class:"pill cp",text:"🎟 "+(d.code?"Coupon":"Bonus")}):null,
+    lowest?el("span",{class:"pill low",text:"Lowest price"}):null,
+    pick&&pick.decision?el("span",{class:"pill mine",text:pick.decision}):null);
+  const b=el("button",{class:"deal",type:"button",onclick:()=>openDeal(d.id)},
+    el("div",{class:"store",text:(ICON[d.cat]||"🏷️")+"  "+d.store}),
+    el("h3",{text:d.item}),
+    c.pct!=null&&c.pct>0?el("span",{class:"tag","aria-label":(d.upTo?"up to ":"")+Math.round(c.pct*100)+" percent off"},d.upTo?el("small",{text:"up to"}):null,Math.round(c.pct*100)+"% off"):null,
+    price,meta,
+    same.length?el("div",{class:"also",text:"Also: "+same.map(x=>x.store+" "+fmt(x.deal)).join(", ")}):null);
+  return b}
+
+function renderDeals(){
+  const g=groups();
+  const counts={};S.items.forEach(d=>counts[d.cat]=(counts[d.cat]||0)+1);
+  const cats=["All",...Object.keys(counts).sort()];
+  const cw=$("#cats");cw.replaceChildren(...cats.map(c=>el("button",{class:"chip",type:"button","aria-pressed":String(S.cat===c),onclick:()=>{S.cat=c;render()}},c,el("span",{class:"n",text:c==="All"?S.items.length:counts[c]}))));
+  const stores=["All",...[...new Set(S.items.map(d=>d.store))].sort()];
+  const ss=$("#store");if(ss.options.length!==stores.length){ss.replaceChildren(...stores.map(s=>el("option",{value:s,text:s==="All"?"All stores":s})))}ss.value=S.store;
+  const list=$("#list");const f=filtered();
+  if(!S.ready){list.replaceChildren(el("div",{class:"empty"},el("strong",{text:S.dbOk===false?"Deals can’t load here":"Loading deals…"}),S.dbOk===false?"Open this page in Claude while signed in to see the deals.":""));return}
+  if(!S.items.length){list.replaceChildren(el("div",{class:"empty"},el("strong",{text:"No deals yet"}),"Tap Sync to see how to load the latest deals."));return}
+  if(!f.length){list.replaceChildren(el("div",{class:"empty"},el("strong",{text:"No deals match"}),"Try a shorter search or clear the filters. ",el("button",{class:"linkbtn",type:"button",onclick:()=>{S.q="";$("#q").value="";S.cat="All";S.store="All";S.status="All";$("#status").value="All";render()}},"Clear filters")));return}
+  list.replaceChildren(...f.map(d=>card(d,g)));
+}
+
+function renderMine(){
+  const g=groups();const ids=Object.keys(S.picks).filter(id=>S.picks[id].decision);
+  const rows=ids.map(id=>S.all.find(d=>d.id===id)).filter(Boolean);
+  let planned=0,spent=0;
+  rows.forEach(d=>{const p=S.picks[d.id];if(p.decision==="Bought")spent+=Number(p.paid??d.deal??0);else if(p.decision==="Buy"||p.decision==="Maybe")planned+=Number(d.deal??0)});
+  $("#planned").textContent=fmt(planned)||"$0";$("#spent").textContent=fmt(spent)||"$0";
+  const b=Number(S.budget);const left=S.budget==null||S.budget===""?null:b-spent-planned;
+  $("#left").textContent=left==null?"Set budget":fmt(left);$("#leftWrap").classList.toggle("neg",left!=null&&left<0);
+  if(document.activeElement!==$("#budget"))$("#budget").value=S.budget??"";
+  const m=$("#mine");
+  if(!rows.length){m.replaceChildren(el("div",{class:"empty"},el("strong",{text:"Nothing on your list yet"}),"Open any deal and choose Buy, Maybe or Bought."));return}
+  const order={Buy:0,Maybe:1,Bought:2,Skip:3};
+  rows.sort((a,b)=>order[S.picks[a.id].decision]-order[S.picks[b.id].decision]);
+  m.replaceChildren(...rows.map(d=>{const c=card(d,g);const p=S.picks[d.id];
+    if(p.target!=null&&p.target!==""&&d.deal!=null){const ok=d.deal<=Number(p.target);c.append(el("div",{class:"verdict"+(ok?" buy":""),text:ok?`At or under your ${fmt(Number(p.target))} target`:`Above your ${fmt(Number(p.target))} target`}))}
+    return c}));
+}
+
+function renderCal(){
+  const c=$("#cal");
+  if(!S.stores.length){c.replaceChildren(el("div",{class:"empty"},el("strong",{text:"No store dates yet"})));return}
+  c.replaceChildren(...S.stores.map(s=>el("div",{class:"panel"},el("h2",{text:s.store}),
+    el("dl",{class:"kv"},el("dt",{text:"Early sale"}),el("dd",{text:s.early}),el("dt",{text:"Black Friday"}),el("dd",{text:s.main}),el("dt",{text:"Cyber Monday"}),el("dd",{text:s.cyber}),el("dt",{text:"Hours"}),el("dd",{text:s.hours}),s.pm?el("dt",{text:"Price match"}):null,s.pm?el("dd",{text:s.pm}):null))));
+}
+
+function render(){
+  $("#dealCount").firstChild.textContent=S.ready?S.items.length:"–";
+  if(S.updatedAt){const d=new Date(S.updatedAt);$("#updated").textContent="Prices as of "+d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+(S.country==="CA"?" in Canadian dollars":" in US dollars")+". Confirm on the store’s site before buying.";$("#syncWhen").textContent="Last synced "+d.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+"."}
+  const CN=S.country==="CA"?"Canada":"USA";$("#bfCountdown").textContent=(S.cd||"")+(S.country==="CA"?" · Canada, prices in CAD":" · USA");
+  document.querySelectorAll(".ctry button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.c===S.country)));
+  $("#q").placeholder=S.country==="CA"?"Search Costco, Lululemon, OLED, Canadian Tire…":"Search AirPods, OLED, Costco, Saks…";
+  renderBadge();renderDisclosure();if(S.view==="deals"){renderBanner();renderDeals();const n=filtered().length;
+    $("#rescount").textContent=S.ready?(S.q?`${n} result${n===1?"":"s"} for “${S.q}” in ${CN}, all categories and stores`:`${n} deal${n===1?"":"s"} in ${CN}`):"";
+    if(S.ready&&S.q&&SEARCH_NOTE)$("#rescount").append(el("span",{class:"didyou",text:` · Showing results for “${SEARCH_NOTE.meant}”`}));
+    const hx=$("#xhint");const other=S.country==="CA"?"US":"CA";
+    if(S.q&&S.ready){const m=filtered(S.all.filter(d=>(d.country||"US")===other)).length;
+      hx.replaceChildren(...(m?[el("div",{class:"xhint"},`${m} more match${m===1?"":"es"} in ${other==="CA"?"Canada":"the USA"}. `,el("button",{class:"linkbtn",type:"button",onclick:()=>setCountry(other)},"Show them"))]:[]))}else hx.replaceChildren()}
+  else if(S.view==="mylist")renderMine();else renderCal();
+}
+
+/* detail sheet */
+function openDeal(id){const d=S.all.find(x=>x.id===id);if(!d)return;const c=calc(d);const p=S.picks[id]||{};
+  const g=groups()[key(d.item)]||[];
+  const dec=["Buy","Maybe","Skip","Bought"].map(x=>el("button",{type:"button","aria-pressed":String(p.decision===x),onclick:()=>{setPick(id,{decision:p.decision===x?null:x});openDeal(id)}},x));
+  const tgt=el("input",{type:"number",min:"0",step:"1",inputmode:"decimal",placeholder:d.deal!=null?String(Math.floor(d.deal)):"",value:p.target??""});
+  tgt.addEventListener("change",()=>setPick(id,{target:tgt.value===""?null:Number(tgt.value)}));
+  const body=$("#dBody");
+  const sl=storeLink(d);
+  const quality=[];if(/all-time low|record/i.test(d.notes||""))quality.push("Lowest price this item has been, per the source.");
+  if(g.length>1){const lo=Math.min(...g.filter(x=>x.deal!=null).map(x=>x.deal));quality.push(d.deal===lo?"Cheapest of the "+g.length+" stores tracked here.":"Cheaper elsewhere: "+fmt(lo)+".")}
+  if(c.pct!=null&&c.pct>=0.5)quality.push("Half off or more.");
+  body.replaceChildren(...[
+    el("button",{class:"close",type:"button","aria-label":"Close",onclick:()=>$("#dlg").close()},"×"),
+    el("div",{class:"hero"},el("div",{class:"pic","aria-hidden":"true",text:ICON[d.cat]||"🏷️"}),
+      el("div",{},el("div",{class:"note",text:d.store+", "+d.cat}),el("h2",{id:"dTitle",text:d.item}),
+        el("div",{class:"meta"},el("span",{class:"pill "+(d.status==="Live"?"live":d.status==="Upcoming"?"soon":""),text:d.status==="Live"?"Live now":d.status==="Upcoming"?"Upcoming":"Check dates"}),isNew(d)?el("span",{class:"pill new",text:"New"}):null))),
+    el("div",{class:"price",style:"margin-top:10px"},d.deal!=null?el("span",{class:"now",text:fmt(d.deal)}):el("span",{class:"now",text:c.pct!=null?Math.round(c.pct*100)+"% off":"See deal"}),d.reg!=null?el("span",{class:"was",text:fmt(d.reg)}):null,c.save>0?el("span",{class:"save",text:"Save "+fmt(c.save)+" ("+Math.round(c.pct*100)+"%)"}):null),
+    el("div",{class:"shoprow"},el("a",{class:"primary",href:aff(d.store,d.link||sl.href,d.country),target:"_blank",rel:"noopener sponsored",text:d.link?"Buy online at "+d.store:sl.label}),d.url?el("a",{class:"ghost",href:d.url,target:"_blank",rel:"noopener",text:"Read the deal source"}):null),
+    el("p",{class:"note",text:d.inStore===true?"Sold online and in stores. Store stock varies by location.":d.inStore===false?"Online only: not in stores.":"Online at the link above. In-store availability not confirmed; check your local store."}),
+    d.coupon?el("div",{class:"coupon"},el("span",{text:"🎟"}),el("div",{style:"flex:1;min-width:0"},el("strong",{text:d.coupon})),d.code?el("code",{text:d.code}):null,d.code?el("button",{class:"ghost",type:"button",onclick:async()=>{try{await navigator.clipboard.writeText(d.code);toast("Code copied")}catch(e){toast("Code: "+d.code)}}},"Copy"):null):null,
+    el("h3",{text:"Deal details",style:"margin:14px 0 6px;font-size:16px"}),
+    el("dl",{class:"kv"},el("dt",{text:"Store"}),el("dd",{text:d.store}),el("dt",{text:"Category"}),el("dd",{text:d.cat}),
+      el("dt",{text:"Regular"}),el("dd",{text:d.reg!=null?fmt(d.reg):"Not listed"}),el("dt",{text:"Deal"}),el("dd",{text:d.deal!=null?fmt(d.deal):(c.pct!=null?Math.round(c.pct*100)+"% off":"See store")}),
+      el("dt",{text:"When"}),el("dd",{text:d.window||"–"}),d.notes?el("dt",{text:"Notes"}):null,d.notes?el("dd",{text:d.notes}):null,
+      quality.length?el("dt",{text:"Worth it?"}):null,quality.length?el("dd",{text:quality.join(" ")}):null,
+      el("dt",{text:"Found"}),el("dd",{text:(d.added?new Date(d.added+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})+" via ":"")+d.src})),
+    g.length>1?el("div",{},el("h3",{text:"Compare stores",style:"margin:14px 0 4px;font-size:16px"}),el("table",{class:"cmp"},el("tbody",{},...g.slice().sort((a,b)=>(a.deal??1e9)-(b.deal??1e9)).map(x=>el("tr",{},el("td",{text:x.store}),el("td",{text:x.deal!=null?fmt(x.deal):"–"})))))):null,
+    el("h3",{text:"Your plan",style:"margin:16px 0 0;font-size:16px"}),
+    el("div",{class:"decide"},...dec),
+    el("label",{class:"field"},"Most I’d pay",tgt)].filter(x=>x!=null));
+  if(!$("#dlg").open)$("#dlg").showModal();
+}
+$("#dlg").addEventListener("click",e=>{if(e.target.id==="dlg")e.target.close()});
+$("#syncDlg").addEventListener("click",e=>{if(e.target.id==="syncDlg"||e.target.hasAttribute("data-close"))$("#syncDlg").close()});
+$("#syncBtn").addEventListener("click",()=>$("#syncDlg").showModal());
+
+/* inputs */
+let qt;$("#q").addEventListener("input",e=>{clearTimeout(qt);qt=setTimeout(()=>{S.q=e.target.value;if(S.view!=="deals")location.hash="deals";render()},120)});
+$("#store").addEventListener("change",e=>{S.store=e.target.value;render()});
+$("#status").addEventListener("change",e=>{S.status=e.target.value;render()});
+$("#sort").addEventListener("change",e=>{S.sort=e.target.value;render()});
+$("#where").addEventListener("change",e=>{S.where=e.target.value;render()});
+$("#budget").addEventListener("change",e=>{S.budget=e.target.value===""?null:Number(e.target.value);savePicks();render()});
+
+/* views */
+function route(){const v=(location.hash||"#deals").slice(1);S.view=["deals","mylist","calendar"].includes(v)?v:"deals";
+  ["deals","mylist","calendar"].forEach(x=>{$("#v-"+x).hidden=x!==S.view});
+  document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.view===S.view)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  render()}
+window.addEventListener("hashchange",route);
+
+/* CSV export */
+const browserDL={save:async({filename,data})=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type:filename.endsWith(".ics")?"text/calendar":"text/csv"}));a.download=filename;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}};
+async function setupExport(){const dl=window.claude&&claude.use?await claude.use("downloads"):browserDL;if(!dl)return;DL=dl;const b=$("#exportBtn");b.hidden=false;
+  b.addEventListener("click",async()=>{const q=v=>{v=v==null?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+    const rows=[["Category","Item","Store","Regular","Deal","% off","When","Status","Where","Coupon","My decision","My target","Notes","Source","Link"]];
+    filtered().forEach(d=>{const c=calc(d),p=S.picks[d.id]||{};rows.push([d.cat,d.item,d.store,d.reg,d.deal,c.pct!=null?Math.round(c.pct*100)+"%":"",d.window,d.status,d.inStore===true?"Online + in store":d.inStore===false?"Online only":"Online",[d.coupon,d.code].filter(Boolean).join(" "),p.decision||"",p.target??"",d.notes,d.src,aff(d.store,d.link||storeLink(d).href,d.country)])});
+    try{await dl.save({filename:"black-friday-2026-deals.csv",data:rows.map(r=>r.map(q).join(",")).join("\n")})}catch(e){toast("Export cancelled")}})}
+
+/* data */
+function markVisit(){try{localStorage.setItem("bf-lastvisit",new Date().toISOString())}catch(e){}}
+const newer=(a,b)=>!b||(a&&a>=b);
+const inC=l=>(l||[]).filter(x=>(x.country||"US")===S.country);
+function applyCountry(){S.items=inC(S.all);S.alerts=inC(S.allAlerts);S.stores=inC(S.allStores);if(S.store!=="All"&&!S.items.some(d=>d.store===S.store))S.store="All";if(S.cat!=="All"&&!S.items.some(d=>d.cat===S.cat))S.cat="All"}
+function setCountry(c){S.country=c;try{localStorage.setItem("bf-country",c)}catch(e){}applyCountry();$("#store").replaceChildren();render()}
+(function(){let c=null;try{c=localStorage.getItem("bf-country")}catch(e){}
+  if(!c){const p=new URLSearchParams(location.search).get("country");if(p)c=p.toUpperCase()}
+  if(!c){const tz=(Intl.DateTimeFormat().resolvedOptions().timeZone||"");const lang=(navigator.language||"");c=/-CA$/i.test(lang)||/^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Montreal|Moncton|Whitehorse|Yellowknife|Iqaluit)/.test(tz)?"CA":"US"}
+  S.country=c==="CA"?"CA":"US"})();
+document.querySelectorAll(".ctry button").forEach(b=>b.addEventListener("click",()=>setCountry(b.dataset.c)));
+function applySnap(){const B=window.BF_SNAPSHOT;if(!B)return;if(B.deals?.items){S.all=B.deals.items;S.updatedAt=B.deals.updatedAt;S.ready=true}if(B.alerts?.alerts)S.allAlerts=B.alerts.alerts;if(B.calendar?.stores)S.allStores=B.calendar.stores;if(B.config)S.config=B.config;applyCountry()}
+/* share */
+$("#shareBtn").addEventListener("click",async()=>{const onClaude=/claude(usercontent)?\.(ai|com)$/.test(location.hostname);const home=S.config.siteUrl||(onClaude||location.protocol==="file:"?"":location.origin+location.pathname);const url=(home||"https://claude.ai/artifact/1qiZ1h6V7wKAQuMRQDcQ4K")+(home?"?country="+S.country:"");
+  const data={title:"Black Friday 2026 Deal Finder",text:"Live Black Friday deals for the USA and Canada, updated twice a day",url};
+  try{if(navigator.share){await navigator.share(data);return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(url);toast("Link copied")}catch(e){toast(url)}});
+/* visit counter: GoatCounter, only on a self-hosted copy (set config.goatcounter to your site code) */
+function setupVisits(){const code=S.config.goatcounter;if(!code||setupVisits.done||/claude(usercontent)?\.(ai|com)$/.test(location.hostname)||location.protocol==="file:")return;setupVisits.done=1;
+  const sc=document.createElement("script");sc.async=true;sc.src="https://gc.zgo.at/count.js";sc.dataset.goatcounter=`https://${code}.goatcounter.com/count`;document.head.append(sc);
+  fetch(`https://${code}.goatcounter.com/counter/TOTAL.json`).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.count){const v=$("#visits");v.hidden=false;v.textContent=j.count+" visits"}}).catch(()=>{})}
+applySnap();setupVisits();if(S.ready&&!markVisit.done){markVisit.done=1;setTimeout(markVisit,1500)}
+loadLocal();route();
+(async()=>{
+  if(!window.claude||!claude.use){setupExport();S.dbOk=false;render();return}
+  setupExport();
+  db=await claude.use("db");
+  if(!db){S.dbOk=false;render();return}
+  const timer=setTimeout(()=>{if(!S.ready){S.dbOk=false;render()}},10000);
+  db.doc("catalog/deals").onSnapshot(s=>{clearTimeout(timer);const v=s.exists?s.data():null;if(v&&Array.isArray(v.items)&&newer(v.updatedAt,S.updatedAt)){S.all=v.items;S.updatedAt=v.updatedAt;applyCountry()}S.ready=S.ready||!!v;S.dbOk=true;if(!markVisit.done){markVisit.done=1;setTimeout(markVisit,1500)}render()},()=>{clearTimeout(timer);S.dbOk=false;render()});
+  db.doc("catalog/alerts").onSnapshot(s=>{const v=s.exists?s.data():null;if(Array.isArray(v?.alerts)){S.allAlerts=v.alerts;applyCountry()}render()},()=>{});
+  db.doc("catalog/config").onSnapshot(s=>{if(s.exists){S.config=s.data()||{};setupVisits();render()}},()=>{});
+  db.doc("catalog/calendar").onSnapshot(s=>{const v=s.exists?s.data():null;if(Array.isArray(v?.stores)){S.allStores=v.stores;applyCountry()}if(S.view==="calendar")render()},()=>{});
+  const user=await claude.use("user");
+  const uid=user?await user.id():null;
+  if(uid){picksRef=db.doc("data/users/"+uid+"/picks");
+    try{const s=await picksRef.get();if(s.exists){const v=s.data();S.picks=v.picks||{};S.budget=v.budget??null;saveLocal()}else if(Object.keys(S.picks).length)savePicks()}catch(e){localOnly=true}
+    render()}
+  else{$("#saveNote").textContent="Your list is saved on this device only."}
+})();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+[build]
+  publish = "."
+
+# Always fetch the latest deals file so new data shows on the next reload
+[[headers]]
+  for = "/deals-data.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
